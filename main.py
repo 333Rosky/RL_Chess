@@ -44,8 +44,64 @@ def main():
         trainer.learn()
         
     elif args.mode == 'play':
-        # Simple play mode against human or random?
-        pass
+        from src.game import Game
+        from src.visualizer import Visualizer
+        import time
+        import numpy as np
+        from src.utils import encode_move, decode_move
+        from src.mcts import MCTS
+
+        # Ensure visualizer output directory exists
+        if not os.path.exists('parts'):
+            os.makedirs('parts') # Using 'parts' as requested by user or just standard export? 
+                                 # Let's use 'visuals' as planned
+        if not os.path.exists('visuals'):
+            os.makedirs('visuals')
+
+        viz = Visualizer()
+        game = Game()
+        
+        # Human vs AI or AI vs AI?
+        # Let's do AI vs AI for now to demonstrate, or ask user?
+        # Creating a simple loop where we can see the board.
+        
+        step = 0
+        print("Starting Game...")
+        print(game.board)
+        
+        # Save initial board
+        viz.add_state(game.board) # Add initial state
+        viz.save_board_svg(game.board, f"visuals/step_{step}.svg")
+        
+        while not game.board.is_game_over():
+            step += 1
+            print(f"\nMove {step}")
+            
+            # AI Move
+            mcts = MCTS(model, num_simulations=args.num_simulations, device=device)
+            root_probs = mcts.search(game)
+            
+            # Pick best move (deterministic for play)
+            best_idx = np.argmax(root_probs)
+            move = decode_move(best_idx)
+            
+            print(f"AI chooses: {move}")
+            game.step(move)
+            print(game.board)
+            
+            # Save visual
+            viz.add_state(game.board)
+            # We can still save individual SVGs if we want, or stop to save space.
+            # viz.save_board_svg(game.board, f"visuals/step_{step}.svg")
+            # viz.save_board_svg(game.board, "visuals/latest.svg")
+            
+        print("Game Over")
+        print(f"Result: {game.board.result()}")
+        
+        # Save Replay
+        print("Generating Replay HTML...")
+        viz.save_game_html("visuals/replay.html")
+        print(f"Replay saved to {os.path.abspath('visuals/replay.html')}")
 
 if __name__ == "__main__":
     main()
