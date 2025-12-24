@@ -1,4 +1,5 @@
 import math
+import chess
 import numpy as np
 import torch
 from src.utils import encode_move, decode_move

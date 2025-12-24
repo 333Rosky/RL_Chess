@@ -36,6 +36,16 @@ def main():
     if args.load_checkpoint:
         print(f"Loading checkpoint: {args.load_checkpoint}")
         model.load_state_dict(torch.load(args.load_checkpoint, map_location=device))
+    else:
+        # Auto-load logic
+        karpov_path = os.path.join(args.checkpoint_dir, 'karpov_v1.pth')
+        if os.path.exists(karpov_path):
+            print(f"Auto-loading Karpov Brain: {karpov_path}")
+            model.load_state_dict(torch.load(karpov_path, map_location=device))
+        else:
+            # Try to load latest checkpoint_{i}.pth
+            pass # Or implement scan logic logic later if needed
+
         
     if args.mode == 'train':
         trainer_args = vars(args)
